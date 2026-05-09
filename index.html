@@ -2,16 +2,38 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Симулятор Тома Реддла</title>
     <style>
-        body {
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
             background: #1a1814;
-            color: #d4c9a8;
             font-family: 'Georgia', serif;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background: radial-gradient(ellipse at top, #2a2418 0%, #0f0e0a 100%);
+            color: #d4c9a8;
+        }
+        /* Основной скроллируемый контейнер */
+        #app-container {
+            width: 100%;
             max-width: 640px;
-            margin: 30px auto;
+            height: 100%;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             padding: 20px;
-            background-image: radial-gradient(ellipse at top, #2a2418 0%, #0f0e0a 100%);
+            background: transparent;
+            position: relative;
         }
         .game-box {
             background: #2a261c;
@@ -19,6 +41,10 @@
             border-radius: 14px;
             padding: 20px;
             box-shadow: 0 0 25px rgba(0,0,0,0.9);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
         }
         h2 {
             margin: 0 0 10px 0;
@@ -88,9 +114,9 @@
             transition: 0.2s;
             position: relative;
         }
-        button:hover {
+        button:active {
             background: #5a4e36;
-            transform: scale(1.02);
+            transform: scale(0.98);
             box-shadow: 0 0 8px #000;
         }
         button:disabled {
@@ -109,6 +135,7 @@
             padding: 8px;
             height: 160px;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             font-style: italic;
             color: #b0a070;
             margin-top: 12px;
@@ -126,14 +153,19 @@
             font-size: 0.8em;
             margin-top: 4px;
         }
+        /* Модальное окно внутри игрового блока */
         .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.75);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 100;
+            border-radius: 14px;
         }
         .modal-content {
             background: #2a261c;
@@ -142,6 +174,9 @@
             border-radius: 12px;
             max-width: 480px;
             width: 90%;
+            max-height: 80%;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             color: #d4c9a8;
         }
         .modal-content h3 {
@@ -155,46 +190,61 @@
     </style>
 </head>
 <body>
-<div class="game-box" id="app">
-    <h2>🐍 Симулятор Тома Реддла 🐍</h2>
-    <div class="top-buttons">
-        <button onclick="showTutorial()" title="Как играть">❓ Как играть</button>
-        <button onclick="restartGame()" title="Начать заново">🔄 Рестарт</button>
-    </div>
-    <div class="stats">
-        <div class="stat-line">💷 Фунты: <span id="money">400</span></div>
-        <div class="stat-line">📅 День: <span id="day">1</span></div>
-        <div class="stat-line">😌 Привязанность: <span id="happy">50</span>%</div>
-        <div class="stat-line">😨 Страх: <span id="fear">70</span>%</div>
-        <div class="stat-line" style="grid-column: span 2;">
-            🧠 Ясность ума Тома:
+<div id="app-container">
+    <div class="game-box" id="app">
+        <h2>🐍 Симулятор Тома Реддла 🐍</h2>
+        <div class="top-buttons">
+            <button onclick="showTutorial()" title="Как играть">❓ Как играть</button>
+            <button onclick="restartGame()" title="Начать заново">🔄 Рестарт</button>
         </div>
-        <div class="bar-container">
-            <div id="sanityFill" class="bar-fill sanity-fill" style="width:70%"></div>
+        <div class="stats">
+            <div class="stat-line">💷 Фунты: <span id="money">400</span></div>
+            <div class="stat-line">📅 День: <span id="day">1</span></div>
+            <div class="stat-line">😌 Привязанность: <span id="happy">50</span>%</div>
+            <div class="stat-line">😨 Страх: <span id="fear">70</span>%</div>
+            <div class="stat-line" style="grid-column: span 2;">
+                🧠 Ясность ума Тома:
+            </div>
+            <div class="bar-container">
+                <div id="sanityFill" class="bar-fill sanity-fill" style="width:70%"></div>
+            </div>
+            <div class="stat-line" style="grid-column: span 2;">
+                🤫 Подозрительность Гарри:
+            </div>
+            <div class="bar-container">
+                <div id="suspicionFill" class="bar-fill suspicion-fill" style="width:20%"></div>
+            </div>
+            <div class="warn" id="warn"></div>
         </div>
-        <div class="stat-line" style="grid-column: span 2;">
-            🤫 Подозрительность Гарри:
-        </div>
-        <div class="bar-container">
-            <div id="suspicionFill" class="bar-fill suspicion-fill" style="width:20%"></div>
-        </div>
-        <div class="warn" id="warn"></div>
-    </div>
 
-    <div>
-        <button onclick="act('toast')" id="btnToast" title="🥗 Десерт (60£).">🥗 Десерт (-60£)</button>
-        <button onclick="act('gift')" id="btnGift" title="🎁 Подарок (40£).">🎁 Подарок (-40£)</button>
-        <button onclick="act('music')" id="btnMusic" title="🎵 Музыка. Зависит от ясности.">🎵 Музыка</button>
-        <button class="btn-reading" onclick="act('reading')" id="btnReading" title="📖 Чтение (20£).">📖 Чтение (-20£)</button>
-        <button onclick="act('walk')" id="btnWalk" title="🌲 Прогулка (25£).">🌲 Прогулка (-25£)</button>
-        <button onclick="act('mask')" id="btnMask" title="🐍 Маска Волдеморта (+30£).">🐍 Маска (+30£)</button>
-        <button class="btn-kiss" onclick="act('kiss')" id="btnKiss" title="💋 Поцеловать.">💋 Поцелуй</button>
-        <button class="btn-meds" onclick="act('meds')" id="btnMeds" title="💊 Лекарство (30£).">💊 Таблетка (-30£)</button>
+        <div>
+            <button onclick="act('toast')" id="btnToast" title="🥗 Десерт (60£).">🥗 Десерт (-60£)</button>
+            <button onclick="act('gift')" id="btnGift" title="🎁 Подарок (40£).">🎁 Подарок (-40£)</button>
+            <button onclick="act('music')" id="btnMusic" title="🎵 Музыка. Зависит от ясности.">🎵 Музыка</button>
+            <button class="btn-reading" onclick="act('reading')" id="btnReading" title="📖 Чтение (20£).">📖 Чтение (-20£)</button>
+            <button onclick="act('walk')" id="btnWalk" title="🌲 Прогулка (25£).">🌲 Прогулка (-25£)</button>
+            <button onclick="act('mask')" id="btnMask" title="🐍 Маска Волдеморта (+30£).">🐍 Маска (+30£)</button>
+            <button class="btn-kiss" onclick="act('kiss')" id="btnKiss" title="💋 Поцеловать.">💋 Поцелуй</button>
+            <button class="btn-meds" onclick="act('meds')" id="btnMeds" title="💊 Лекарство (30£).">💊 Таблетка (-30£)</button>
+        </div>
+        <div class="event-log" id="log"></div>
     </div>
-    <div class="event-log" id="log"></div>
 </div>
 
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
+    (function() {
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+            // Применяем цветовую схему Telegram (тёмная тема)
+            if (tg.colorScheme === 'dark') {
+                document.body.style.backgroundColor = '#1a1814';
+            }
+        }
+    })();
+
     // ---------- ПЕРЕМЕННЫЕ ----------
     let money, happy, fear, day, gameOver, daysInDebt;
     let suspicion, sanity, kissBlocked;
@@ -227,20 +277,23 @@
             </ul>
             <p><b>Особые механики:</b></p>
             <ul>
-                <li><b>Ловушка комфорта</b> — если страх долго держится 15–35%, подозрительность медленно растёт сама (Гарри привыкает и начинает искать подвох).</li>
-                <li><b>Флешбеки</b> — случайные воспоминания (о Джинни, детстве, Волдеморте) влияют на Гарри: при низкой ясности они пугают, при высокой — дают небольшую привязанность.</li>
-                <li><b>Раздвоение Тома</b> — при нулевой ясности следующее действие выбирается автоматически (кроме таблеток), имитируя безумный порыв.</li>
-                <li><b>Желание причинить боль</b> — когда привязанность >90%, а страх <20%, Том может ощутить тёмное желание проверить Гарри. Придётся сопротивляться, тратя ясность, либо поддаться и разрушить отношения.</li>
-                <li><b>События выбора</b> — письмо Джинни, болезнь змеи, визит юриста, массаж.</li>
-                <li><b>Деньги</b> — если уйти в минус надолго, последует банкротство и проигрыш.</li>
-            </ul>
-            <p>Следи за балансом, читай детальные описания в логе и да пребудет с тобой удача, Лорд Волдеморт.</p>`,
+                <li><b>Ловушка комфорта</b> — если страх долго держится 15–35%, подозрительность медленно растёт сама.</li>
+                <li><b>Флешбеки</b> — случайные воспоминания влияют на Гарри.</li>
+                <li><b>Раздвоение Тома</b> — при нулевой ясности действие выбирается случайно.</li>
+                <li><b>Желание причинить боль</b> — возникает при высокой привязанности и низком страхе.</li>
+                <li><b>События выбора</b> — письмо, змея, юрист, массаж.</li>
+            </ul>`,
             [{ label: 'Понятно', action: ()=>{} }]
         );
     }
 
-    // ---------- МОДАЛЬНЫЕ ОКНА ----------
+    // ---------- МОДАЛЬНЫЕ ОКНА (внутри game-box) ----------
     function showModal(title, text, options) {
+        const gameBox = document.getElementById('app');
+        // Удаляем старый оверлей, если есть
+        const old = gameBox.querySelector('.modal-overlay');
+        if (old) old.remove();
+
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay';
         const content = document.createElement('div');
@@ -251,14 +304,14 @@
             btn.innerText = opt.label;
             btn.onclick = () => {
                 opt.action();
-                document.body.removeChild(overlay);
+                overlay.remove();
                 updateUI();
                 checkEnd();
             };
             content.appendChild(btn);
         });
         overlay.appendChild(content);
-        document.body.appendChild(overlay);
+        gameBox.appendChild(overlay);
     }
 
     // ---------- КОНЦОВКИ ----------
@@ -280,7 +333,7 @@
             return true;
         }
         if (happy <= 5 && fear >= 80) {
-            endGame('⚰️ В приступе отчаяния Гарри наносит себе вред. Ты не успеваешь его спасти. (Трагическая концовка)');
+            endGame('⚰️ В приступе отчаяния Гарри наносит себе вред. (Трагическая концовка)');
             return true;
         }
         if (fear >= 15 && fear <= 25 && happy >= 85) {
@@ -353,13 +406,11 @@
     function act(type) {
         if (gameOver) return;
 
-        // Раздвоение Тома: если ясность = 0, действие заменяется случайным (кроме таблеток)
         if (sanity <= 0 && type !== 'meds') {
             log('🌀 Том теряет контроль над собой! Действие выбрано безумным порывом.');
             type = chooseFrom(['toast','gift','music','reading','walk','mask','kiss']);
         }
 
-        // Снижение ясности за действие (кроме таблеток)
         if (type !== 'meds') sanity = Math.max(0, sanity - 5);
         if (kissBlocked > 0) kissBlocked--;
 
@@ -375,7 +426,6 @@
 
         trackRepetition(type);
 
-        // ---------- ДЕЙСТВИЯ ----------
         switch(type) {
             case 'toast':
                 money -= 60;
@@ -519,20 +569,17 @@
                 break;
         }
 
-        // Резкие перепады страха
         if (Math.abs(fear - prevFear) > 15) {
             suspicion = Math.min(100, suspicion + 5);
             log('📈 Резкая смена твоего поведения настораживает Гарри. Подозрительность растёт.');
         }
         prevFear = fear;
 
-        // Механика 1: Ловушка комфорта
         if (fear >= COMFORT_FEAR_MIN && fear <= COMFORT_FEAR_MAX) {
             suspicion = Math.min(100, suspicion + 1);
             if (Math.random() < 0.3) log('😶 Гарри привыкает к относительной безопасности. Он начинает всматриваться в твои действия с подозрением.');
         }
 
-        // Механика 2: Флешбеки
         if (Math.random() < 0.08) {
             const flashbackTypes = ['Джинни', 'детство', 'Волдеморт'];
             const fbType = chooseFrom(flashbackTypes);
@@ -549,7 +596,6 @@
         checkDebt();
         triggerRandomEvent();
 
-        // Механика 8: Желание причинить боль
         if (happy > 90 && fear < 20) {
             if (Math.random() < 0.4) {
                 showModal('Тёмный порыв',
@@ -572,7 +618,6 @@
             }
         }
 
-        // Смена дня
         if (Math.random() < 0.12) {
             day++;
             money += 45;
@@ -584,7 +629,6 @@
         checkEnd();
     }
 
-    // ---------- ДОЛГИ ----------
     function checkDebt() {
         if (money < 0) {
             daysInDebt++;
@@ -599,7 +643,6 @@
         }
     }
 
-    // ---------- СЛУЧАЙНЫЕ СОБЫТИЯ (без ренты) ----------
     function triggerRandomEvent() {
         if (Math.random() < 0.35) {
             const r = Math.random();
@@ -623,7 +666,6 @@
         }
     }
 
-    // ---------- ВЫБОРЫ (МОДАЛЬНЫЕ) ----------
     function modalChoice() {
         if (gameOver) return;
         const scenarios = [
@@ -700,7 +742,6 @@
         showModal(scenario.title, scenario.text, scenario.options);
     }
 
-    // ---------- РЕСТАРТ ----------
     function restartGame() {
         resetVars();
         document.getElementById('log').innerHTML = '';
@@ -713,7 +754,6 @@
         updateUI();
     }
 
-    // ---------- СТАРТ ----------
     resetVars();
     lastActions = [];
     prevFear = 70;
