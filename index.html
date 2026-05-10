@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Симулятор Тома Реддла — Осколки</title>
+    <title>Осколки</title>
     <style>
         * { box-sizing: border-box; }
         html, body {
@@ -22,22 +22,18 @@
         }
         .game-box {
             background: #2a261c; border: 2px solid #5e4e32; border-radius: 14px;
-            padding: 20px; box-shadow: 0 0 25px rgba(0,0,0,0.9);
-            position: relative; display: flex; flex-direction: column; min-height: 100%;
+            padding: 20px; position: relative; display: flex; flex-direction: column; min-height: 100%;
         }
         h2 {
             margin: 0 0 10px 0; color: #d4af37; text-align: center;
-            animation: glow 2s infinite alternate;
-        }
-        @keyframes glow {
-            from { text-shadow: 0 0 5px #d4af37; }
-            to   { text-shadow: 0 0 15px #ffcc44; }
         }
         .top-buttons {
             display: flex; justify-content: space-between; margin-bottom: 12px;
         }
         .top-buttons button {
-            background: #4a3224; border-color: #aa6644; font-size: 0.8em; padding: 6px 12px;
+            background: #4a3224; border: 1px solid #aa6644; color: #d4c9a8;
+            font-size: 0.8em; padding: 6px 12px; border-radius: 6px;
+            font-family: inherit; cursor: pointer;
         }
         .stats {
             background: #1e1b14; border: 1px solid #5e4e32; border-radius: 8px;
@@ -50,21 +46,17 @@
             grid-column: span 2; height: 12px; background: #3a3224;
             border-radius: 6px; margin: 4px 0; overflow: hidden;
         }
-        .bar-fill { height: 100%; transition: width 0.3s; }
+        .bar-fill { height: 100%; }
         .sanity-fill { background: #7a9a7a; }
         .suspicion-fill { background: #aa6a4a; }
 
         button {
             background: #3a3224; border: 1px solid #6e5e42; color: #e0d6b0;
             padding: 8px 10px; margin: 3px; border-radius: 6px; cursor: pointer;
-            font-family: inherit; font-size: 0.9em; transition: 0.2s; position: relative;
+            font-family: inherit; font-size: 0.9em;
         }
-        button:active {
-            background: #5a4e36; transform: scale(0.98); box-shadow: 0 0 8px #000;
-        }
-        button:disabled {
-            opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none;
-        }
+        button:active { background: #5a4e36; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-kiss { background: #4a2a3a; border-color: #aa4466; }
         .btn-intimacy { background: #3a2a3a; border-color: #aa4466; }
         .btn-meds { background: #2a3a4a; border-color: #4466aa; }
@@ -75,17 +67,15 @@
         .event-log {
             background: #0d0c09; border: 1px solid #4e3e22; padding: 8px;
             height: 160px; overflow-y: auto; -webkit-overflow-scrolling: touch;
-            font-style: italic; color: #b0a070; margin-top: 12px; font-size: 0.9em;
+            font-style: italic; color: #b0a070; margin-top: 12px; font-size: 0.88em;
         }
-        .log-entry { opacity: 0; animation: fadeIn 0.4s forwards; }
-        @keyframes fadeIn { to { opacity: 1; } }
 
         .warn {
             grid-column: span 2; color: #ff9966; font-size: 0.8em; margin-top: 4px;
         }
         .modal-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); display: flex; align-items: center;
+            background: rgba(0,0,0,0.85); display: flex; align-items: center;
             justify-content: center; z-index: 100; border-radius: 14px;
         }
         .modal-content {
@@ -107,21 +97,13 @@
         </div>
         <div class="stats">
             <div class="stat-line">💷 Фунты: <span id="money">500</span></div>
-            <div class="stat-line">📅 День: <span id="day">1</span> <span style="font-size:0.8em;">(<span id="actionsLeft">5</span> действ.)</span></div>
+            <div class="stat-line">📅 День: <span id="day">1</span> (<span id="actionsLeft">5</span> действ.)</div>
             <div class="stat-line">😌 Привязанность: <span id="happy">50</span>%</div>
             <div class="stat-line">😨 Страх: <span id="fear">70</span>%</div>
-            <div class="stat-line" style="grid-column: span 2;">
-                🧠 Ясность ума Тома:
-            </div>
-            <div class="bar-container">
-                <div id="sanityFill" class="bar-fill sanity-fill" style="width:80%"></div>
-            </div>
-            <div class="stat-line" style="grid-column: span 2;">
-                🤫 Подозрительность Гарри:
-            </div>
-            <div class="bar-container">
-                <div id="suspicionFill" class="bar-fill suspicion-fill" style="width:20%"></div>
-            </div>
+            <div class="stat-line" style="grid-column: span 2;">🧠 Ясность ума Тома:</div>
+            <div class="bar-container"><div id="sanityFill" class="bar-fill sanity-fill" style="width:80%"></div></div>
+            <div class="stat-line" style="grid-column: span 2;">🤫 Подозрительность Гарри:</div>
+            <div class="bar-container"><div id="suspicionFill" class="bar-fill suspicion-fill" style="width:20%"></div></div>
             <div class="warn" id="warn"></div>
         </div>
 
@@ -142,12 +124,11 @@
     </div>
 </div>
 
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
-    (function() {
-        const tg = window.Telegram?.WebApp;
-        if (tg) { tg.ready(); tg.expand(); }
-    })();
+    if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+    }
 
     // ---------- ПЕРЕМЕННЫЕ ----------
     let money, happy, fear, day, gameOver, daysInDebt;
@@ -178,28 +159,19 @@
     }
 
     function showTutorial() {
-        showModal('📖 Как играть в "Осколки"',
+        showModal('📖 Как играть',
             `<p><b>Ты — Том Реддл.</b> Гарри Поттер — твой пленник. Цель — чтобы он <b>сам захотел остаться</b>.</p>
-            <p>Каждый день длится ровно <b>5 действий</b>. Планируй их с умом.</p>
-            <p><b>Основные показатели:</b></p>
-            <ul>
-                <li><b>Привязанность</b> – чем выше, тем теплее его чувства.</li>
-                <li><b>Страх</b> – сдерживает побег, но высокий ломает психику.</li>
-                <li><b>Подозрительность</b> – растёт от однообразных действий и резких перемен. При 95+ Гарри обманет и сбежит.</li>
-                <li><b>Ясность ума Тома</b> – падает от большинства действий. При низкой (<25) Том включает Баха и «Грозовой перевал». При 0 срывается на случайное действие.</li>
-            </ul>
-            <p><b>Ключевые механики:</b></p>
-            <ul>
-                <li><b>🎶 Колыбельная</b> – доступна сразу, раз в день. При высокой ясности и низком страхе сильно успокаивает.</li>
-                <li><b>🖤 Близость</b> – открывается после первого поцелуя (любого). Раз в день, требует ясность ≥40. Эффект зависит от страха.</li>
-                <li><b>📓 Дневник</b> – предложить Гарри писать и выбрать реакцию: похвалить, унизить или сжечь записи.</li>
-            </ul>
-            <p><b>Совет:</b> 🐍 Маска — главный источник денег (+40£) и ясности (+8).</p>`,
+            <p>Каждый день = <b>5 действий</b>.</p>
+            <p><b>Показатели:</b> Привязанность, Страх, Подозрительность, Ясность ума Тома.</p>
+            <p><b>🎶 Колыбельная</b> — раз в день, успокаивает при высокой ясности.</p>
+            <p><b>🖤 Близость</b> — после поцелуя, раз в день (ясность ≥40).</p>
+            <p><b>📓 Дневник</b> — сжечь / унизить / похвалить.</p>
+            <p>🐍 Маска = +40£ и +8 ясности.</p>`,
             [{ label: 'Понял', action: ()=>{} }]
         );
     }
 
-    function showModal(title, text, options) {
+    function showModal(title, html, options) {
         const gameBox = document.getElementById('app');
         const old = gameBox.querySelector('.modal-overlay');
         if (old) old.remove();
@@ -207,10 +179,10 @@
         overlay.className = 'modal-overlay';
         const content = document.createElement('div');
         content.className = 'modal-content';
-        content.innerHTML = `<h3>${title}</h3>${text}`;
+        content.innerHTML = `<h3>${title}</h3>${html}`;
         options.forEach(opt => {
             const btn = document.createElement('button');
-            btn.innerText = opt.label;
+            btn.textContent = opt.label;
             btn.onclick = () => {
                 opt.action();
                 overlay.remove();
@@ -226,37 +198,36 @@
     function endGame(msg) {
         if (gameOver) return;
         gameOver = true;
-        document.querySelectorAll('button:not(.top-buttons button)').forEach(b => b.disabled = true);
+        document.querySelectorAll('#app button:not(.top-buttons button)').forEach(b => b.disabled = true);
         document.getElementById('log').innerHTML = '<div style="font-weight:bold; color:#d4af37; text-align:center; padding:10px;">' + msg + '</div>';
-        document.getElementById('warn').innerText = '';
+        document.getElementById('warn').textContent = '';
     }
 
     function checkEnd() {
-        if (fear <= 10) { endGame('🚪 Гарри перестал бояться и этой ночью сбежал, оставив пустую кровать. «Ты был прав, Том — мне плевать на тебя». (Концовка: «Побег»)'); return true; }
-        if (fear >= 100 && happy < 20) { endGame('💔 Гарри полностью сломлен. Он сидит в углу и не реагирует на тебя. «Я — слабак. Я полное ничтожество. Ты был прав.» (Концовка: «Сломанный Осколочек»)'); return true; }
-        if (happy <= 5 && fear >= 80) { endGame('⚰️ В приступе отчаяния Гарри наносит себе вред. Ты не успеваешь его спасти. «Ненавижу этот долбаный карандаш». (Трагическая концовка)'); return true; }
-        if (fear >= 15 && fear <= 25 && happy >= 85) { endGame('🕊️ Гарри сам подходит и тихо говорит: «Мне больше некуда идти». Вы вместе смотрите на закат за окном. «Из чего бы ни были сотворены наши души, твоя душа и моя — одно». (Идеальная концовка: «Золотая клетка стала домом»)'); return true; }
-        if (money < -150 || daysInDebt >= 3) { endGame('🏚️ Ты разорён. Особняк продан за долги, змеи распроданы. Гарри освобождён социальными службами. (Концовка: «Банкротство»)'); return true; }
-        if (suspicion >= 95) { endGame('🕵️ Гарри искусно притворялся послушным. Сегодня ты обнаружил, что он сбежал, не оставив следа. «Оскар за лучшую актерскую игру в этом году присуждается… Гарри Поттеру!» (Концовка: «Обманный побег»)'); return true; }
+        if (fear <= 10) { endGame('🚪 Гарри перестал бояться и этой ночью сбежал. (Концовка: «Побег»)'); return true; }
+        if (fear >= 100 && happy < 20) { endGame('💔 Гарри полностью сломлен. (Концовка: «Сломанный Осколочек»)'); return true; }
+        if (happy <= 5 && fear >= 80) { endGame('⚰️ В приступе отчаяния Гарри наносит себе вред. (Трагическая концовка)'); return true; }
+        if (fear >= 15 && fear <= 25 && happy >= 85) { endGame('🕊️ Гарри сам подходит и тихо говорит: «Мне больше некуда идти». Вы вместе смотрите на закат. (Идеальная концовка: «Золотая клетка стала домом»)'); return true; }
+        if (money < -150 || daysInDebt >= 3) { endGame('🏚️ Ты разорён. Особняк продан за долги. Гарри освобождён. (Концовка: «Банкротство»)'); return true; }
+        if (suspicion >= 95) { endGame('🕵️ Гарри искусно притворялся послушным. Сегодня ты обнаружил, что он сбежал. (Концовка: «Обманный побег»)'); return true; }
         return false;
     }
 
     function log(text) {
         const logDiv = document.getElementById('log');
         const entry = document.createElement('div');
-        entry.className = 'log-entry';
-        entry.innerText = '> ' + text;
+        entry.textContent = '> ' + text;
         logDiv.prepend(entry);
-        if (logDiv.children.length > 8) logDiv.removeChild(logDiv.lastChild);
+        while (logDiv.children.length > 6) logDiv.removeChild(logDiv.lastChild);
         logDiv.scrollTop = 0;
     }
 
     function updateUI() {
-        document.getElementById('money').innerText = money;
-        document.getElementById('happy').innerText = happy;
-        document.getElementById('fear').innerText = fear;
-        document.getElementById('day').innerText = day;
-        document.getElementById('actionsLeft').innerText = actionsLeft;
+        document.getElementById('money').textContent = money;
+        document.getElementById('happy').textContent = happy;
+        document.getElementById('fear').textContent = fear;
+        document.getElementById('day').textContent = day;
+        document.getElementById('actionsLeft').textContent = actionsLeft;
         document.getElementById('sanityFill').style.width = sanity + '%';
         document.getElementById('suspicionFill').style.width = suspicion + '%';
 
@@ -267,9 +238,10 @@
         if (sanity < 20) warn += '🧠 Том теряет контроль! ';
         if (suspicion >= 70) warn += '🤫 Гарри скрытен… ';
         if (daysWithoutDiary >= 5) warn += '📓 Гарри тоскует по дневнику! ';
-        document.getElementById('warn').innerText = warn;
+        document.getElementById('warn').textContent = warn;
 
-        document.getElementById('fear').style.color = fear > 85 ? '#ff4444' : fear < 20 ? '#44ff44' : '#d4c9a8';
+        const fearEl = document.getElementById('fear');
+        fearEl.style.color = fear > 85 ? '#ff4444' : fear < 20 ? '#44ff44' : '#d4c9a8';
 
         document.getElementById('btnToast').disabled = money < 50;
         document.getElementById('btnGift').disabled = money < 40;
@@ -279,7 +251,9 @@
         document.getElementById('btnKiss').disabled = kissBlocked > 0;
         document.getElementById('btnLullaby').disabled = lullabyUsedToday;
         document.getElementById('btnIntimacy').style.display = unlockedIntimacy ? 'inline-block' : 'none';
-        document.getElementById('btnIntimacy').disabled = intimacyUsedToday || sanity < 40 || kissBlocked > 0;
+        if (unlockedIntimacy) {
+            document.getElementById('btnIntimacy').disabled = intimacyUsedToday || sanity < 40 || kissBlocked > 0;
+        }
     }
 
     let lastActions = [];
@@ -288,7 +262,7 @@
         if (lastActions.length > 3) lastActions.shift();
         if (lastActions.length === 3 && new Set(lastActions).size === 1) {
             suspicion = Math.min(100, suspicion + 8);
-            log('🤫 Гарри замечает, что твои действия слишком однообразны. Подозрительность растёт.');
+            log('🤫 Гарри замечает, что твои действия слишком однообразны. «Вечно тебе надо всё усложнить, Осколочек». Подозрительность растёт.');
         }
     }
 
@@ -298,7 +272,6 @@
     function act(type) {
         if (gameOver) return;
 
-        // Раздвоение Тома
         if (sanity <= 0 && type !== 'meds') {
             log('🌀 Том теряет контроль над собой! «Я — лорд Волдеморт в своём истинном обличье». Действие выбрано безумным порывом.');
             type = chooseFrom(['toast','gift','music','reading','walk','mask','kiss','lullaby','diary','intimacy']);
@@ -322,12 +295,11 @@
             case 'toast':
                 money -= 50;
                 {
-                    const highFear = fear >= 50;
-                    const options = highFear ? [
-                        { text: '🥗 Ты готовишь венские вафли с голубикой. Гарри пробует с опаской, но вкус немного отвлекает его от мрачных мыслей ', h: 10, f: -5, s: 3 },
+                    const options = fear >= 50 ? [
+                        { text: '🥗 Ты готовишь венские вафли с голубикой. Гарри пробует с опаской, но вкус немного отвлекает его от мрачных мыслей.', h: 10, f: -5, s: 3 },
                         { text: '🍰 Чизкейк с ягодами. Даже сквозь страх Гарри не может сдержать тихого вздоха удовольствия. «Надеюсь, папа с мамой с облачков не видят, какой я жалкий».', h: 12, f: -6, s: 2 }
                     ] : [
-                        { text: '🥗 Венские вафли с голубикой. Гарри ест, но взгляд всё ещё колючий — он не доверяет твоей щедрости.', h: 14, f: -8, s: 2 },
+                        { text: '🥗 Венские вафли с голубикой. Гарри ест, но взгляд всё ещё колючий — он не доверяет твоей щедрости. «Я надеялся, что ты пойдешь со мной по своему желанию».', h: 14, f: -8, s: 2 },
                         { text: '🍰 Чизкейк с ягодами. Гарри почти улыбается, но вовремя одёргивает себя, словно напоминая, что он пленник.', h: 12, f: -10, s: 1 }
                     ];
                     const opt = chooseFrom(options);
@@ -341,8 +313,7 @@
             case 'gift':
                 money -= 40;
                 {
-                    const highFear = fear >= 50;
-                    const items = highFear ? [
+                    const items = fear >= 50 ? [
                         { name: '📖 «Томми Мирор»', fC: -12, sC: 6, txt: 'Ты протягиваешь Гарри потрёпанный экземпляр его любимой детской книги. Он недоверчиво берёт, но его пальцы дрожат.' },
                         { name: '📱 Телефон без сим-карты', fC: -8, sC: 8, txt: 'Ты даришь ему дорогой телефон, но без сим-карты. Гарри крутит его в руках и понимает — это очередная изящная насмешка над его положением.' },
                         { name: '🎨 Краски и холст', fC: -10, sC: 5, txt: 'Ты приносишь краски. Гарри принимает их молча, но в его глазах на мгновение вспыхивает интерес. Он вспоминает картины матери.' }
@@ -354,7 +325,7 @@
                     const choice = chooseFrom(items);
                     fear = Math.max(MIN, fear + choice.fC);
                     suspicion += choice.sC;
-                    log(`🎁 ${choice.name}. ${choice.txt}`);
+                    log('🎁 ' + choice.name + '. ' + choice.txt);
                 }
                 break;
 
@@ -391,7 +362,7 @@
                     log(chooseFrom(texts) + ' (Книга выбрана неудачно)');
                 } else {
                     const texts = [
-                        '📖 Ты читаешь «Томми Мирор». Гарри слушает с тёплой улыбкой, вспоминая детство в приюте. «Ты волшебник. Я слазу понял. Это вылитый ты!»',
+                        '📖 Ты читаешь «Томми Мирор». Гарри слушает с тёплой улыбкой, вспоминая детство в приюте.',
                         '📖 Приключения Томми Мирора вызывают у Гарри давно забытые эмоции. Он даже задаёт вопрос — впервые за долгое время.'
                     ];
                     happy = Math.min(MAX, happy + 14);
@@ -420,18 +391,17 @@
             case 'walk':
                 money -= 25;
                 {
-                    const highFear = fear >= 50;
-                    const walks = highFear ? [
-                        { text: '🌲 Вы выходите на прогулку. Прохладный ветер ерошит волосы. Гарри ёжится, но глубоко вдыхает свежий воздух. «Если я не выйду на улицу, я вздернусь на турнике».', fC: -8, hC: 6, susp: 3 },
-                        { text: '🌲 Моросит дождь. Ты держишь зонт, и Гарри вынужден идти рядом. Его шаги постепенно становятся увереннее.', fC: -10, hC: 5, susp: 4 }
+                    const walks = fear >= 50 ? [
+                        { text: '🌲 Вы выходите на прогулку. Прохладный ветер ерошит волосы. Гарри ёжится, но глубоко вдыхает свежий воздух. «Если я не выйду на улицу, я вздернусь на турнике».', fC: -8, hC: 6 },
+                        { text: '🌲 Моросит дождь. Ты держишь зонт, и Гарри вынужден идти рядом. Его шаги постепенно становятся увереннее.', fC: -10, hC: 5 }
                     ] : [
-                        { text: '🌲 Солнечная прогулка у древнего дуба. Гарри шутит, он в хорошем настроении. «Мы вместе, и никто нам больше не помешает».', fC: -12, hC: 8, susp: 3 },
-                        { text: '🌲 Вы идёте к ручью. Гарри наклоняется к воде, и ты чувствуешь его минутное умиротворение.', fC: -14, hC: 8, susp: 2 }
+                        { text: '🌲 Солнечная прогулка у древнего дуба. Гарри шутит, он в хорошем настроении. «Мы вместе, и никто нам больше не помешает».', fC: -12, hC: 8 },
+                        { text: '🌲 Вы идёте к ручью. Гарри наклоняется к воде, и ты чувствуешь его минутное умиротворение.', fC: -14, hC: 8 }
                     ];
                     const w = chooseFrom(walks);
                     fear = Math.max(MIN, fear + w.fC);
                     happy = Math.min(MAX, happy + w.hC);
-                    suspicion += w.susp;
+                    suspicion += 3;
                     log(w.text);
                 }
                 break;
@@ -458,7 +428,6 @@
                     suspicion = Math.max(0, suspicion + h.s);
                     log(h.text);
                 }
-                // Открываем близость после любого поцелуя
                 if (!unlockedIntimacy) {
                     unlockedIntimacy = true;
                     log('🖤 Гарри напряжён, но теперь ты можешь попробовать… большее. Открыта кнопка «Близость».');
@@ -490,7 +459,7 @@
                     happy = Math.min(MAX, happy + 18);
                     fear = Math.max(MIN, fear - 8);
                     suspicion = Math.min(100, suspicion + 10);
-                    log('🖤 Ты притягиваешь его ближе. Гарри поддаётся, но ты видишь в его глазах понимание — это очередная манипуляция. «Я устал его бояться. Это чувство превратилось в нечто настолько привычное, что уже перестало приносить особый дискомфорт».');
+                    log('🖤 Ты притягиваешь его ближе. Гарри поддаётся, но ты видишь в его глазах понимание — это очередная манипуляция.');
                 } else {
                     fear = Math.min(MAX, fear + 20);
                     happy = Math.max(MIN, happy - 10);
@@ -528,11 +497,11 @@
                             log('📓 Ты сжигаешь его записи на его глазах. Гарри молчит, но страх усиливается. «Он раз за разом уничтожает все мои записки, шут знает зачем».');
                         } else if (choice === 'cold') {
                             happy = Math.max(MIN, happy - 3);
-                            log('📓 Ты холодно комментируешь прочитанное. Гарри замыкается. «Ненавижу этот долбанный карандаш».');
+                            log('📓 Ты холодно комментируешь прочитанное. Гарри замыкается.');
                         } else if (choice === 'praise') {
                             happy = Math.min(MAX, happy + 8);
                             suspicion = Math.min(100, suspicion + 6);
-                            log('📓 Ты хвалишь его за честность. Гарри озадачен, но привязанность немного растёт. «Я обиделся на Тома, что теперь у меня нет мамы и папы, но так было надо, п-нимаете?»');
+                            log('📓 Ты хвалишь его за честность. Гарри озадачен, но привязанность немного растёт.');
                         }
                     };
                     showModal('📓 Дневник Гарри',
@@ -548,33 +517,30 @@
                 }
         }
 
-        // резкие перепады страха
         if (Math.abs(fear - prevFear) > 15) {
             suspicion = Math.min(100, suspicion + 5);
             log('📈 Резкая смена твоего поведения настораживает Гарри. «Ты меня пугаешь». Подозрительность растёт.');
         }
         prevFear = fear;
 
-        // флешбеки
         if (Math.random() < 0.08) {
             const fb = chooseFrom(['Джинни', 'детство в приюте', 'Волдеморт']);
             if (sanity <= SANITY_LOW) {
                 fear = Math.min(MAX, fear + 15);
                 happy = Math.max(MIN, happy - 10);
-                log(`💭 Внезапное воспоминание о ${fb} захлёстывает Гарри. Он вздрагивает, лицо искажается болью. «Мои родители погибли в автокатастрофе… Ты просто очень болен».`);
+                log('💭 Внезапное воспоминание о ' + fb + ' захлёстывает Гарри. Он вздрагивает, лицо искажается болью. «Мои родители погибли в автокатастрофе…');
             } else {
                 happy = Math.min(MAX, happy + 5);
-                log(`💭 Гарри на мгновение задумывается, вспоминая ${fb}. Ты чувствуешь лёгкую перемену в его настроении.`);
+                log('💭 Гарри на мгновение задумывается, вспоминая ' + fb + '. Ты чувствуешь лёгкую перемену в его настроении.');
             }
         }
 
         checkDebt();
         triggerRandomEvent();
 
-        // тёмный порыв
         if (happy > 90 && fear < 20 && Math.random() < 0.4) {
             showModal('Тёмный порыв',
-                'Привязанность Гарри так высока, а страх почти исчез. Ты чувствуешь, как внутри поднимается желание проверить его верность — причинить боль, чтобы убедиться, что он действительно твой.',
+                'Привязанность Гарри так высока, а страх почти исчез. Ты чувствуешь желание проверить его верность — причинить боль, чтобы убедиться, что он действительно твой.',
                 [
                     { label: 'Сопротивляться (-15 Ясности)', action: ()=>{
                         sanity = Math.max(0, sanity - 15);
@@ -634,16 +600,16 @@
             if (r < 0.25) {
                 happy = Math.max(MIN, happy - 10);
                 fear = Math.min(MAX, fear + 12);
-                log('😱 Ночные кошмары. Гарри просыпается в холодном поту, бормоча что-то о стенах. «Стены замолчали, твари утихли. Мальчик-кукла, видимо, тоже заснул».');
+                log('😱 Ночные кошмары. Гарри просыпается в холодном поту, бормоча что-то о стенах.');
             } else if (r < 0.50) {
                 money -= 55;
                 log('🚚 Приезжает курьер с кормом для змей. Ты вынужден заплатить (-55£). «Всего лишь мыши, для змей. Пойдем, Осколочек».');
             } else if (r < 0.65) {
                 happy = Math.min(MAX, happy + 8);
-                log('📖 Вечернее чтение само собой получилось удачным. Гарри засыпает спокойно. «Для послеобеденного чтения выбрал ему "Грозовой перевал"».');
+                log('📖 Вечернее чтение само собой получилось удачным. Гарри засыпает спокойно.');
             } else if (r < 0.80) {
                 suspicion = Math.min(100, suspicion + 10);
-                log('🗣️ Гарри пытается заговорить о прошлом. Ты чувствуешь, что он проверяет границы. «Ты правда меня не помнишь?»');
+                log('🗣️ Гарри пытается заговорить о прошлом. Ты чувствуешь, что он проверяет границы.');
             } else {
                 fear = Math.min(MAX, fear + 15);
                 log('🐍 Одна из змей выбралась из террариума. Гарри в панике, пока ты не находишь её в его постели. «Нагайна не тронет тебя. Я приказал ей».');
@@ -706,7 +672,7 @@
                 title: 'Попытка массажа',
                 text: 'Том предлагает расслабляющий массаж. Гарри напрягается, вспоминая прошлый опыт.',
                 options: [
-                    { label: 'Принудить (+5 Привяз., +10 Страх, +10 Ясность, −10£)', action: ()=>{
+                    { label: 'Принудить (+12 Привяз., +5 Страх, +10 Ясность, −10£)', action: ()=>{
                         money -= 10;
                         sanity = Math.min(100, sanity + 10);
                         happy = Math.min(MAX, happy + 12);
@@ -730,9 +696,9 @@
     function restartGame() {
         resetVars();
         document.getElementById('log').innerHTML = '';
-        document.querySelectorAll('button:not(.top-buttons button)').forEach(b => b.disabled = false);
+        document.querySelectorAll('#app button:not(.top-buttons button)').forEach(b => b.disabled = false);
         document.getElementById('fear').style.color = '#d4c9a8';
-        document.getElementById('warn').innerText = '';
+        document.getElementById('warn').textContent = '';
         lastActions = [];
         prevFear = 70;
         log('🕯️ Ты приносишь завтрак. Гарри молча ковыряет глазунью, ожидая нового дня.');
@@ -745,9 +711,7 @@
     log('🕯️ Ты приносишь завтрак. Гарри молча ковыряет глазунью, ожидая нового дня.');
     updateUI();
 
-    window.addEventListener('load', () => {
-        setTimeout(showTutorial, 500);
-    });
+    setTimeout(showTutorial, 600);
 </script>
 </body>
 </html>
