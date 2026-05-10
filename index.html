@@ -624,78 +624,104 @@
 
     function modalChoice() {
         if (gameOver) return;
-        const scenarios = [
-            {
-                title: 'Письмо Джинни',
-                text: 'Гарри просит разрешения написать письмо жене. Он хочет объяснить, что ушёл добровольно.',
-                options: [
-                    { label: 'Разрешить (−25 Страх, +20 Подозрение)', action: ()=>{
-                        fear = Math.max(MIN, fear - 25);
-                        suspicion = Math.min(100, suspicion + 20);
-                        log('📝 Ты позволяешь написать письмо. Гарри выводит слова дрожащей рукой, но ты чувствуешь подвох.');
-                    }},
-                    { label: 'Запретить (+10 Страх, −8 Привяз.)', action: ()=>{
-                        fear = Math.min(MAX, fear + 10);
-                        happy = Math.max(MIN, happy - 8);
-                        log('❌ Ты рвёшь бумагу. Гарри молча отводит взгляд.');
-                    }}
-                ]
-            },
-            {
-                title: 'Болезнь змеи',
-                text: 'Нагайна больна. Лечение дорого, но её смерть может вывести Тома из равновесия.',
-                options: [
-                    { label: 'Лечить (−80£, +15 Ясность)', action: ()=>{
-                        money -= 80;
-                        sanity = Math.min(100, sanity + 15);
-                        log('🏥 Ты оплачиваешь ветеринара. Нагайна спасена, и Том успокаивается.');
-                    }},
-                    { label: 'Усыпить (−15 Ясность, +10 Страх)', action: ()=>{
-                        sanity = Math.max(0, sanity - 15);
-                        fear = Math.min(MAX, fear + 10);
-                        log('💀 Ты усыпляешь Нагайну. Гарри в ужасе от твоей жестокости.');
-                    }}
-                ]
-            },
-            {
-                title: 'Визит Руди',
-                text: 'Приехал Лестрейндж по юридическим делам. Гарри просит разрешения поговорить с ним.',
-                options: [
-                    { label: 'Разрешить (−5 Страх, +20 Подозрение)', action: ()=>{
-                        fear = Math.max(MIN, fear - 5);
-                        suspicion = Math.min(100, suspicion + 20);
-                        log('🗣️ Ты позволяешь Гарри поговорить с Руди. Краем уха слышишь, как он умоляет вызвать полицию. Подозрительность взлетает.');
-                    }},
-                    { label: 'Запретить (+10 Страх, −8 Привяз.)', action: ()=>{
-                        fear = Math.min(MAX, fear + 10);
-                        happy = Math.max(MIN, happy - 8);
-                        log('🚫 Ты запрещаешь разговор. Гарри смотрит с отчаянием и отворачивается.');
-                    }}
-                ]
-            },
-            {
-                title: 'Попытка массажа',
-                text: 'Том предлагает расслабляющий массаж. Гарри напрягается, вспоминая прошлый опыт.',
-                options: [
-                    { label: 'Принудить (+12 Привяз., +5 Страх, +10 Ясность, −10£)', action: ()=>{
-                        money -= 10;
-                        sanity = Math.min(100, sanity + 10);
-                        happy = Math.min(MAX, happy + 12);
-                        fear = Math.min(MAX, fear + 5);
-                        suspicion = Math.min(100, suspicion + 5);
-                        log('💆 Ты делаешь массаж. Гарри расслабляется помимо воли, но страх не уходит полностью.');
-                    }},
-                    { label: 'Позволить отказаться (+15 Страх, −5 Привяз., −15 Ясность)', action: ()=>{
-                        sanity = Math.max(0, sanity - 15);
-                        fear = Math.min(MAX, fear + 15);
-                        happy = Math.max(MIN, happy - 5);
-                        log('😠 Ты в ярости от отказа. Гарри сжимается, ожидая наказания.');
-                    }}
-                ]
+        const scenarios = [];
+        
+        // Письмо Джинни — всегда доступно
+        scenarios.push({
+            title: 'Письмо Джинни',
+            text: 'Гарри просит разрешения написать письмо жене. Он хочет объяснить, что ушёл добровольно.',
+            options: [
+                { label: 'Разрешить (−25 Страх, +20 Подозрение)', action: ()=>{
+                    fear = Math.max(MIN, fear - 25);
+                    suspicion = Math.min(100, suspicion + 20);
+                    log('📝 Ты позволяешь написать письмо. Гарри выводит слова дрожащей рукой, но ты чувствуешь подвох.');
+                }},
+                { label: 'Запретить (+10 Страх, −8 Привяз.)', action: ()=>{
+                    fear = Math.min(MAX, fear + 10);
+                    happy = Math.max(MIN, happy - 8);
+                    log('❌ Ты рвёшь бумагу. Гарри молча отводит взгляд.');
+                }}
+            ]
+        });
+        
+        // Болезнь змеи — только если хватает денег на лечение ИЛИ ясности на усыпление
+        if (money >= 80 || sanity >= 15) {
+            const zooOptions = [];
+            if (money >= 80) {
+                zooOptions.push({ label: 'Лечить (−80£, +15 Ясность)', action: ()=>{
+                    money -= 80;
+                    sanity = Math.min(100, sanity + 15);
+                    log('🏥 Ты оплачиваешь ветеринара. Нагайна спасена, и Том успокаивается.');
+                }});
             }
-        ];
-        const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
-        showModal(scenario.title, scenario.text, scenario.options);
+            if (sanity >= 15) {
+                zooOptions.push({ label: 'Усыпить (−15 Ясность, +10 Страх)', action: ()=>{
+                    sanity = Math.max(0, sanity - 15);
+                    fear = Math.min(MAX, fear + 10);
+                    log('💀 Ты усыпляешь Нагайну. Гарри в ужасе от твоей жестокости.');
+                }});
+            }
+            if (zooOptions.length >= 2) {
+                scenarios.push({
+                    title: 'Болезнь змеи',
+                    text: 'Нагайна больна. Лечение дорого, но её смерть может вывести Тома из равновесия.',
+                    options: zooOptions
+                });
+            }
+        }
+        
+        // Визит Руди — всегда доступен
+        scenarios.push({
+            title: 'Визит Руди',
+            text: 'Приехал Лестрейндж по юридическим делам. Гарри просит разрешения поговорить с ним.',
+            options: [
+                { label: 'Разрешить (−5 Страх, +20 Подозрение)', action: ()=>{
+                    fear = Math.max(MIN, fear - 5);
+                    suspicion = Math.min(100, suspicion + 20);
+                    log('🗣️ Ты позволяешь Гарри поговорить с Руди. Краем уха слышишь, как он умоляет вызвать полицию. Подозрительность взлетает.');
+                }},
+                { label: 'Запретить (+10 Страх, −8 Привяз.)', action: ()=>{
+                    fear = Math.min(MAX, fear + 10);
+                    happy = Math.max(MIN, happy - 8);
+                    log('🚫 Ты запрещаешь разговор. Гарри смотрит с отчаянием и отворачивается.');
+                }}
+            ]
+        });
+        
+        // Массаж — только если хватает денег на принуждение ИЛИ ясности на отказ
+        if (money >= 10 || sanity >= 15) {
+            const massageOptions = [];
+            if (money >= 10) {
+                massageOptions.push({ label: 'Принудить (+12 Привяз., +5 Страх, +10 Ясность, −10£)', action: ()=>{
+                    money -= 10;
+                    sanity = Math.min(100, sanity + 10);
+                    happy = Math.min(MAX, happy + 12);
+                    fear = Math.min(MAX, fear + 5);
+                    suspicion = Math.min(100, suspicion + 5);
+                    log('💆 Ты делаешь массаж. Гарри расслабляется помимо воли, но страх не уходит полностью.');
+                }});
+            }
+            if (sanity >= 15) {
+                massageOptions.push({ label: 'Позволить отказаться (+15 Страх, −5 Привяз., −15 Ясность)', action: ()=>{
+                    sanity = Math.max(0, sanity - 15);
+                    fear = Math.min(MAX, fear + 15);
+                    happy = Math.max(MIN, happy - 5);
+                    log('😠 Ты в ярости от отказа. Гарри сжимается, ожидая наказания.');
+                }});
+            }
+            if (massageOptions.length >= 2) {
+                scenarios.push({
+                    title: 'Попытка массажа',
+                    text: 'Том предлагает расслабляющий массаж. Гарри напрягается, вспоминая прошлый опыт.',
+                    options: massageOptions
+                });
+            }
+        }
+
+        if (scenarios.length > 0) {
+            const scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+            showModal(scenario.title, scenario.text, scenario.options);
+        }
     }
 
     function restartGame() {
